@@ -312,6 +312,27 @@ class ArrayHandler(TypeHandler):
         s, tspec, global_shape=args.global_shape)
 
 
+class StringHandler(TypeHandler):
+  """TypeHandler for strings that enforces aggregation."""
+
+  async def serialize(self,
+                      value: str,
+                      info: ParamInfo,
+                      args: Optional[SaveArgs] = None) -> List[Future]:
+    """See superclass documentation."""
+    if args is None:
+      args = SaveArgs()
+    if not args.aggregate:
+      raise ValueError('Non-aggregated string serialization is not supported.')
+    return []
+
+  async def deserialize(self,
+                        info: ParamInfo,
+                        args: Optional[RestoreArgs] = None) -> str:
+    """See superclass documentation."""
+    raise NotImplementedError
+
+
 _TYPE_REGISTRY = [
     (lambda ty: issubclass(ty, int), ScalarHandler()),
     (lambda ty: issubclass(ty, float), ScalarHandler()),
@@ -321,6 +342,7 @@ _TYPE_REGISTRY = [
     (lambda ty: issubclass(ty, GlobalDeviceArray), ArrayHandler()),
     (lambda ty: issubclass(ty, jax.Array) and jax.config.jax_array,
      ArrayHandler()),
+    (lambda ty: issubclass(ty, str), StringHandler()),
 ]
 
 

@@ -125,8 +125,10 @@ def assert_tree_equal(testclass, expected, actual):
       for shard_expected, shard_actual in zip(v_expected.addressable_shards,
                                               v_actual.addressable_shards):
         np.testing.assert_array_equal(shard_expected.data, shard_actual.data)
-    else:
+    elif isinstance(v_expected, (np.ndarray, jnp.ndarray)):
       np.testing.assert_array_equal(v_expected, v_actual)
+    else:
+      testclass.assertEqual(v_expected, v_actual)
 
   jax.tree_util.tree_map(assert_array_equal, expected, actual, is_leaf=is_leaf)
 
